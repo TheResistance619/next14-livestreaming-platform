@@ -12,27 +12,23 @@ const roomService = new RoomServiceClient(
     );
 
 
-export const onBlock = async (id: string) => {
-    const self = await getSelf();
-
-    let blockedUser;
-
-    try {
-     blockedUser = await blockUser(id);
-    } catch {
-        // This means user is a guest
-    }
-     
-    try {
-        await roomService.removeParticipant(self.id, id);
-    } catch {
-        // This means user is not in the room
-    }
-
-    revalidatePath(`/u/${self.username}/community`);
-
-    return blockedUser;
-};
+    export const onBlock = async (id: string) => {
+        const self = await getSelf();
+      
+        const blockedUser = await blockUser(id);
+      
+        try {
+          await roomService.removeParticipant(self.id, id);
+        } catch (error) {
+          console.error("Error removing user from room:", error);
+          // Handle error gracefully, e.g., log the error
+        }
+      
+        revalidatePath(`/u/${self.username}/community`);
+      
+        return blockedUser;
+      };
+      
 
 
 export const onUnblock = async (id: string) => {
