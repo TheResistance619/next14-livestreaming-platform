@@ -26,7 +26,7 @@ export default function RootLayout({
         <ThemeProvider
         attribute="class"
         forcedTheme="dark"
-        storageKey="PlayNexus-theme"
+        storageKey="Campfire-theme"
         >
           <Toaster theme="light" position="bottom-center"/>
           {children}

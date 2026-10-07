@@ -13,7 +13,7 @@ export const Logo = () => {
             <div className="bg-white rounded-full p-1">
                 <Image 
                 src="/spooky.svg"
-                alt="PlayNexus"
+                alt="Campfire"
                 height="80"
                 width="80"
               />
@@ -22,7 +22,7 @@ export const Logo = () => {
                 "flex flex-col items-center",
                )}>
                 <p className="text-xl font-semibold">
-                    PlayNexus
+                    Campfire
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Stream your world !  

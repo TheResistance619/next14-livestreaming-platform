@@ -3,39 +3,103 @@ import { ResultCard, ResultCardSkeleton } from "./result-card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const Results = async () => {
-const data = await getStreams();
+    const data = await getStreams();
 
     return (
-        <div>
-            <h2 className="text-lg font-semibold mb-4">
-                Streams we think you&apos;ll like
-            </h2>
-            {data.length === 0 && (
-                <div className="text-muted-foreground text-sm">
-                    No Streams Found
-                </div>   
-            )}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-              {data.map((result) => (
-                <ResultCard 
-                  key={result.id}
-                  data={result}
-                />
-              ))}
-            </div>
+        <div className="space-y-10">
+            {/* Welcome section */}
+            <section className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[#17171d] via-[#111116] to-[#0b0b0f] px-8 py-10">
+                {/* Campfire glow */}
+                <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-orange-500/[0.10] blur-3xl" />
+                <div className="pointer-events-none absolute -bottom-32 left-1/3 h-56 w-56 rounded-full bg-amber-500/[0.05] blur-3xl" />
+
+                <div className="relative max-w-2xl">
+                    <div className="mb-3 flex items-center gap-x-2">
+                        <span className="text-xl">🔥</span>
+                        <span className="text-sm font-medium text-orange-400">
+                            Welcome to Campfire
+                        </span>
+                    </div>
+
+                    <h1 className="text-3xl font-bold tracking-tight lg:text-4xl">
+                        Find something worth watching.
+                    </h1>
+
+                    <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground lg:text-base">
+                        Discover creators, games, music, coding and more...
+                        there&apos;s always something happening around the
+                        Campfire.
+                    </p>
+                </div>
+            </section>
+
+            {/* Live streams */}
+            <section>
+                <div className="mb-5 flex items-end justify-between">
+                    <div>
+                        <h2 className="text-xl font-semibold tracking-tight">
+                            Live around the Campfire
+                        </h2>
+
+                        <p className="mt-1 text-sm text-muted-foreground">
+                            Creators streaming right now
+                        </p>
+                    </div>
+
+                    {data.length > 0 && (
+                        <span className="hidden text-xs text-muted-foreground sm:block">
+                            {data.length}{" "}
+                            {data.length === 1 ? "stream" : "streams"}
+                        </span>
+                    )}
+                </div>
+
+                {data.length === 0 && (
+                    <div className="rounded-xl border border-dashed border-white/[0.08] px-6 py-12 text-center">
+                        <div className="text-3xl">🔥</div>
+                        <p className="mt-3 text-sm font-medium">
+                            The Campfire is quiet...
+                        </p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                            No creators are streaming right now.
+                        </p>
+                    </div>
+                )}
+
+                <div className="grid grid-cols-1 gap-x-5 gap-y-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+                    {data.map((result) => (
+                        <ResultCard
+                            key={result.id}
+                            data={result}
+                        />
+                    ))}
+                </div>
+            </section>
         </div>
-    )
-}
+    );
+};
 
 export const ResultsSkeleton = () => {
     return (
-        <div>
-           <Skeleton className="h-8 w-[290px] mb-4"/>
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-              {[...Array(4)].map((_, i) => (
-                <ResultCardSkeleton key={i} />
-              ))}
-           </div>
+        <div className="space-y-10">
+            {/* Welcome skeleton */}
+            <div className="rounded-2xl border border-white/[0.06] bg-[#111116] px-8 py-10">
+                <Skeleton className="h-5 w-40" />
+                <Skeleton className="mt-4 h-10 w-96 max-w-full" />
+                <Skeleton className="mt-4 h-5 w-[500px] max-w-full" />
+            </div>
+
+            {/* Stream skeleton */}
+            <div>
+                <Skeleton className="h-7 w-52" />
+                <Skeleton className="mt-2 h-4 w-40" />
+
+                <div className="mt-5 grid grid-cols-1 gap-x-5 gap-y-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+                    {[...Array(5)].map((_, i) => (
+                        <ResultCardSkeleton key={i} />
+                    ))}
+                </div>
+            </div>
         </div>
     );
 };

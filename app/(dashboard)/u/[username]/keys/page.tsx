@@ -21,7 +21,7 @@ const KeysPage = async () => {
 
                 <p className="text-sm text-muted-foreground mt-2">
                     Connect OBS or another streaming application to
-                    broadcast on PlayNexus.
+                    broadcast on Campfire.
                 </p>
             </div>
 
@@ -32,7 +32,7 @@ const KeysPage = async () => {
                     </h2>
 
                     <p className="text-sm text-muted-foreground mt-1">
-                        Generate a connection and PlayNexus will provide
+                        Generate a connection and Campfire will provide
                         the Server URL and Stream Key you need in OBS.
                     </p>
                 </div>

@@ -24,29 +24,37 @@ export const Navigation = () => {
         );
     }
 
-    if (!user?.username) {
+    if (!user) {
+        return null;
+    }
+
+    const username =
+        user.username ||
+        user.emailAddresses[0]?.emailAddress.split("@")[0];
+
+    if (!username) {
         return null;
     }
 
     const routes = [
         {
             label: "Stream",
-            href: `/u/${user.username}`,
+            href: `/u/${username}`,
             icon: Fullscreen,
         },
         {
-            label: "Keys",
-            href: `/u/${user.username}/keys`,
+            label: "Stream Setup",
+            href: `/u/${username}/keys`,
             icon: KeyRound,
         },
         {
             label: "Chat",
-            href: `/u/${user.username}/chat`,
+            href: `/u/${username}/chat`,
             icon: MessageSquare,
         },
         {
             label: "Community",
-            href: `/u/${user.username}/community`,
+            href: `/u/${username}/community`,
             icon: Users,
         },
     ];
