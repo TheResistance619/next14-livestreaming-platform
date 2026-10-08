@@ -7,6 +7,7 @@ import {
     KeyRound,
     MessageSquare,
     Users,
+    BarChart3,
 } from "lucide-react";
 import { NavItem, NavItemSkeleton } from "./nav-item";
 
@@ -17,7 +18,7 @@ export const Navigation = () => {
     if (!isLoaded) {
         return (
             <ul className="space-y-2">
-                {[...Array(4)].map((_, i) => (
+                {[...Array(5)].map((_, i) => (
                     <NavItemSkeleton key={i} />
                 ))}
             </ul>
@@ -51,6 +52,11 @@ export const Navigation = () => {
             label: "Chat",
             href: `/u/${username}/chat`,
             icon: MessageSquare,
+        },
+        {
+            label: "Polls",
+            href: `/u/${username}/polls`,
+            icon: BarChart3,
         },
         {
             label: "Community",
