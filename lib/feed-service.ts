@@ -1,8 +1,8 @@
-import { db } from "@/lib/db"
-import { getSelf } from "@/lib/auth-service"
+import { db } from "@/lib/db";
+import { getSelf } from "@/lib/auth-service";
 
-export const getStreams =  async () => {
-  let userId;
+export const getStreams = async () => {
+  let userId: string | null = null;
 
   try {
     const self = await getSelf();
@@ -10,56 +10,65 @@ export const getStreams =  async () => {
   } catch {
     userId = null;
   }
-  let streams = [];
 
-  if (userId) {
-     streams = await db.stream.findMany({
-        where: {
-            user: {
-                NOT: {
-                    blocking: {
-                        some: {
-                            blockedId: userId,
-                        }
-                    }
-                }
-            }
-        },
-        select: {
-            id: true,
-          user: true,
-          thumbnailUrl: true,
-          name: true,
-          isLive: true,
-        },
-        orderBy: [
-            {
-                isLive: "desc",
+  const streams = await db.stream.findMany({
+    where: userId
+      ? {
+          user: {
+            NOT: {
+              blocking: {
+                some: {
+                  blockedId: userId,
+                },
+              },
             },
-            {
-                updatedAt: "desc",
-            }
-        ],
-     });
-  } else {
-    streams =  await db.stream.findMany({
-        select: {
-            id: true,
-            user: true,
-            thumbnailUrl: true,
-            name: true,
-            isLive: true,
           },
-        orderBy: [
-            {
-                isLive: "desc",
-            },
-            {
-                updatedAt: "desc",
-            }
-        ]
-    });
+        }
+      : undefined,
+    select: {
+      id: true,
+      user: true,
+      thumbnailUrl: true,
+      name: true,
+      isLive: true,
+      updatedAt: true,
+      userId: true,
+    },
+    orderBy: [
+      { isLive: "desc" },
+      { updatedAt: "desc" },
+    ],
+  });
+
+  if (!userId) {
+    return streams.map((stream) => ({
+      ...stream,
+      isFollowed: false,
+    }));
   }
 
-  return streams;
+  const followedUsers = await db.follow.findMany({
+    where: { followerId: userId },
+    select: { followingId: true },
+  });
+
+  const followedUserIds = new Set(
+    followedUsers.map((follow) => follow.followingId)
+  );
+
+  return streams
+    .map((stream) => ({
+      ...stream,
+      isFollowed: followedUserIds.has(stream.userId),
+    }))
+    .sort((a, b) => {
+      const aPriority = a.isLive && a.isFollowed ? 1 : 0;
+      const bPriority = b.isLive && b.isFollowed ? 1 : 0;
+
+      if (aPriority !== bPriority) {
+        return bPriority - aPriority;
+      }
+
+      return b.updatedAt.getTime() - a.updatedAt.getTime();
+    });
 };
