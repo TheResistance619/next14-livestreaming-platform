@@ -1,23 +1,37 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* =========================================
+   CAMPFIRE — Global foundations
+========================================= */
+
 html,
 body,
 :root {
-  height: 100%;
-  @apply bg-neutral-900/80;
+  min-height: 100%;
 }
 
-.hidden-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+html {
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 }
 
-.hidden-scrollbar::-webkit-scrollbar { 
-  display: none;
+body {
+  @apply bg-neutral-900/80 text-foreground antialiased;
+  background-image:
+    radial-gradient(
+      ellipse at 50% 0%,
+      rgba(249, 115, 22, 0.055),
+      transparent 55%
+    );
 }
- 
+
+/* =========================================
+   Theme variables
+========================================= */
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -25,68 +39,166 @@ body,
 
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
- 
+
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
- 
+
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
- 
+
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
- 
+
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
- 
+
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
- 
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
- 
-    --radius: 0.5rem;
+
+    --radius: 0.75rem;
   }
- 
+
   .dark {
     --background: 226.7 12.7% 13.9%;
     --foreground: 210 40% 98%;
- 
+
     --card: 226.7 12.7% 13.9%;
     --card-foreground: 210 40% 98%;
- 
+
     --popover: 226.7 12.7% 13.9%;
     --popover-foreground: 210 40% 98%;
- 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
- 
+
+    --primary: 24.6 95% 53.1%;
+    --primary-foreground: 0 0% 100%;
+
     --secondary: 226.7 12.7% 17.5%;
     --secondary-foreground: 210 40% 98%;
- 
+
     --muted: 226.7 12.7% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
- 
-    --accent: 226.7 12.7% 17.5%;
-    --accent-foreground: 210 40% 98%;
- 
+
+    --accent: 20 90% 48%;
+    --accent-foreground: 0 0% 100%;
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
- 
-    --border: 226.7 12.7% 17.5%;
-    --input: 226.7 12.7% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+
+    --border: 226.7 12.7% 20%;
+    --input: 226.7 12.7% 20%;
+    --ring: 24.6 95% 53.1%;
   }
-}
- 
-@layer base {
+
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
+  }
+
+  ::selection {
+    color: white;
+    background: rgba(249, 115, 22, 0.75);
+  }
+
+  :focus-visible {
+    outline: 2px solid rgba(249, 115, 22, 0.9);
+    outline-offset: 3px;
+  }
+}
+
+/* =========================================
+   Scrollbars
+========================================= */
+
+.hidden-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hidden-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #45403d transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #45403d;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #f97316;
+  background-clip: padding-box;
+}
+
+/* =========================================
+   CAMPFIRE SPARKS — Live reactions
+========================================= */
+
+@keyframes campfire-spark-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.6) rotate(-8deg);
+  }
+
+  15% {
+    opacity: 1;
+    transform: translateY(-20px) scale(1.15) rotate(8deg);
+  }
+
+  75% {
+    opacity: 0.9;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-260px) scale(0.85) rotate(-8deg);
+  }
+}
+
+.campfire-spark {
+  animation: campfire-spark-rise 2.5s ease-out forwards;
+  will-change: transform, opacity;
+  user-select: none;
+}
+
+/* =========================================
+   Motion accessibility
+========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

@@ -1,8 +1,8 @@
+
 "use client";
 
 import { useViewerToken } from "@/hooks/use-viewer-token";
-import { Stream, User } from "@prisma/client";
-import { LiveKitRoom } from "@livekit/components-react";
+import { LiveKitRoom, useParticipants, useRoomContext } from "@livekit/components-react";
 import { Video, VideoSkeleton } from "./video";
 import { useChatSidebar } from "@/store/use-chat-sidebar";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,7 @@ import { ChatToggle } from "./chat-toggle";
 import { Header, HeaderSkeleton } from "./header";
 import { InfoCard } from "./info-card";
 import { AboutCard } from "./about-card";
+import { CampfirePulse } from "./campfire-pulse";
 
 type CustomStream = {
     id: string;
@@ -37,17 +38,42 @@ interface StreamPlayerProps {
     isFollowing: boolean;
 }
 
+interface CampfirePulseContainerProps {
+    hostIdentity: string;
+    viewerIdentity: string;
+}
+
+const CampfirePulseContainer = ({
+    hostIdentity,
+    viewerIdentity,
+}: CampfirePulseContainerProps) => {
+    const room = useRoomContext();
+    const participants = useParticipants();
+
+    const hostAsViewer = `host-${hostIdentity}`;
+    const isHost = viewerIdentity === hostAsViewer;
+
+    const viewerCount = participants.filter(
+        (participant) =>
+            participant.identity !== hostIdentity &&
+            participant.identity !== hostAsViewer
+    ).length;
+
+    return (
+        <CampfirePulse
+            room={room}
+            viewerCount={viewerCount}
+            isHost={isHost}
+        />
+    );
+};
+
 export const StreamPlayer = ({
     user,
     stream,
-    isFollowing
+    isFollowing,
 }: StreamPlayerProps) => {
-    const {
-        token,
-        name,
-        identity,
-    } = useViewerToken(user.id);
-
+    const { token, name, identity } = useViewerToken(user.id);
     const { collapsed } = useChatSidebar((state) => state);
 
     if (!token || !name || !identity) {
@@ -83,6 +109,11 @@ export const StreamPlayer = ({
                         imageUrl={user.imageUrl}
                         isFollowing={isFollowing}
                         name={stream.name}
+                    />
+
+                    <CampfirePulseContainer
+                        hostIdentity={user.id}
+                        viewerIdentity={identity}
                     />
 
                     <InfoCard
