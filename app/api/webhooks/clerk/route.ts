@@ -1,118 +1,118 @@
-import { Webhook } from 'svix'
-import { headers } from 'next/headers'
-import { WebhookEvent } from '@clerk/nextjs/server'
 
-import { db } from '@/lib/db'
-import { resetIngresses } from '@/actions/ingress'
+import { Webhook } from "svix";
+import { headers } from "next/headers";
+import { WebhookEvent } from "@clerk/nextjs/server";
 
+import { db } from "@/lib/db";
+import { resetIngresses } from "@/actions/ingress";
 
 export async function POST(req: Request) {
-  // You can find this in the Clerk Dashboard -> Webhooks -> choose the webhook
-  const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET
- 
+  const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
+
   if (!WEBHOOK_SECRET) {
-    throw new Error('Please add CLERK_WEBHOOK_SECRET from Clerk Dashboard to .env or .env.local')
+    console.error("Missing CLERK_WEBHOOK_SECRET environment variable");
+    return new Response("Webhook secret is not configured", {
+      status: 500,
+    });
   }
 
-  // Get the headers
+  // Read and validate the Svix webhook headers.
   const headerPayload = headers();
   const svix_id = headerPayload.get("svix-id");
   const svix_timestamp = headerPayload.get("svix-timestamp");
   const svix_signature = headerPayload.get("svix-signature");
 
-  // If there are no headers, error out
   if (!svix_id || !svix_timestamp || !svix_signature) {
-    return new Response('Error occured -- no svix headers', {
-      status: 400
-    })
+    return new Response("Missing Svix headers", {
+      status: 400,
+    });
   }
 
-  // Get the body
-  const payload = await req.json()
-  const body = JSON.stringify(payload);
-
-  // Create a new Svix instance with your secret.
+  // Read the raw request body for signature verification.
+  const body = await req.text();
   const wh = new Webhook(WEBHOOK_SECRET);
 
-  let evt: WebhookEvent
+  let evt: WebhookEvent;
 
-  // Verify the payload with the headers
   try {
     evt = wh.verify(body, {
       "svix-id": svix_id,
       "svix-timestamp": svix_timestamp,
       "svix-signature": svix_signature,
-    }) as WebhookEvent
-  } catch (err) {
-    console.error('Error verifying webhook:', err);
-    return new Response('Error occured', {
-      status: 400
-    })
+    }) as WebhookEvent;
+  } catch (error) {
+    console.error("Error verifying Clerk webhook:", error);
+    return new Response("Invalid webhook signature", {
+      status: 400,
+    });
   }
 
   const eventType = evt.type;
+  const data = evt.data;
 
-if (eventType === "user.created") {
-  const username =
-    payload.data.username ||
-    payload.data.email_addresses[0].email_address.split("@")[0];
+  try {
+    if (eventType === "user.created" || eventType === "user.updated") {
+      const userData = data as {
+        id: string;
+        username: string | null;
+        image_url: string;
+        primary_email_address_id: string | null;
+        email_addresses: Array<{
+          id: string;
+          email_address: string;
+        }>;
+      };
 
-  await db.user.upsert({
-    where: {
-      externalUserId: payload.data.id,
-    },
-    update: {
-      username,
-      imageUrl: payload.data.image_url,
-    },
-    create: {
-      externalUserId: payload.data.id,
-      username,
-      imageUrl: payload.data.image_url,
-      stream: {
-        create: {
-          name: `${username}'s stream`,
+      const primaryEmail = userData.email_addresses?.find(
+        (email) => email.id === userData.primary_email_address_id
+      )?.email_address;
+
+      const emailUsername = primaryEmail?.split("@")[0];
+
+      const username =
+        userData.username?.trim() ||
+        emailUsername ||
+        `user_${userData.id.slice(-8)}`;
+
+      await db.user.upsert({
+        where: {
+          externalUserId: userData.id,
         },
-      },
-    },
-  });
-}
-
- if (eventType === "user.updated") {
-  const username =
-    payload.data.username ||
-    payload.data.email_addresses[0].email_address.split("@")[0];
-
-  await db.user.upsert({
-    where: {
-      externalUserId: payload.data.id,
-    },
-    update: {
-      username,
-      imageUrl: payload.data.image_url,
-    },
-    create: {
-      externalUserId: payload.data.id,
-      username,
-      imageUrl: payload.data.image_url,
-      stream: {
-        create: {
-          name: `${username}'s stream`,
+        update: {
+          username,
+          imageUrl: userData.image_url,
         },
-      },
-    },
-  });
-}
- 
-  if (eventType === "user.deleted") {
-   await resetIngresses(payload.data.id);
+        create: {
+          externalUserId: userData.id,
+          username,
+          imageUrl: userData.image_url,
+          stream: {
+            create: {
+              name: `${username}'s stream`,
+            },
+          },
+        },
+      });
+    }
 
-    await db.user.delete({
-      where: {
-        externalUserId: payload.data.id,
-      },
+    if (eventType === "user.deleted") {
+      const userData = data as { id: string };
+
+      await resetIngresses(userData.id);
+
+      await db.user.deleteMany({
+        where: {
+          externalUserId: userData.id,
+        },
+      });
+    }
+
+    return new Response(null, { status: 200 });
+  } catch (error) {
+    console.error(`Error processing Clerk webhook (${eventType}):`, error);
+
+    return new Response("Error processing webhook event", {
+      status: 500,
     });
   }
- 
-  return new Response('', { status: 200 })
-};
+}
