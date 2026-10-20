@@ -18,6 +18,7 @@ import { ChatForm, ChatFormSkeleton } from "./chat-form";
 import { ChatList, ChatListSkeleton } from "./chat-list";
 import { ChatCommunity } from "./chat-commnuity";
 import { Poll } from "./poll";
+import { ChatBookmarks } from "./chat-bookmarks";
 
 interface ChatProps {
     hostName: string;
@@ -62,9 +63,9 @@ export const Chat = ({
     }, [matches, onExpand]);
 
     const reversedMessages = useMemo(() => {
-        return messages.sort(
-            (a, b) => b.timestamp - a.timestamp
-        );
+    return [...messages].sort(
+        (a, b) => b.timestamp - a.timestamp
+    );
     }, [messages]);
 
     const onSubmit = () => {
@@ -85,13 +86,16 @@ export const Chat = ({
             {variant === ChatVariant.CHAT && (
                 <>
                     <Poll
-                        streamId={streamId}
-                        room={room}
-                    />
+                      streamId={streamId}
+                      room={room}
+                     />
+
+                    <ChatBookmarks streamId={streamId} />
 
                     <ChatList
-                        messages={reversedMessages}
-                        isHidden={isHidden}
+                       messages={reversedMessages}
+                       isHidden={isHidden}
+                       streamId={streamId}
                     />
 
                     <ChatForm

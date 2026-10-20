@@ -35,3 +35,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local Campfire chat backup
+campfire-chat-backup/
+
+# Temporary: unverified Prisma baseline
+prisma/migrations/20261009160000_baseline/

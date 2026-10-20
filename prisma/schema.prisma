@@ -1,3 +1,4 @@
+
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["fullTextIndex", "fullTextSearch"]
@@ -20,7 +21,7 @@ model User {
   following      Follow[] @relation("Following")
   followedBy     Follow[] @relation("FollowedBy")
   blocking       Block[]  @relation("Blocking")
-  blockedBy      Block[] @relation("BlockedBy")
+  blockedBy      Block[]  @relation("BlockedBy")
   stream         Stream?
 }
 
@@ -39,12 +40,28 @@ model Stream {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
-  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  polls Poll[]
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  polls          Poll[]
+  pinnedMessages PinnedMessage[]
 
   @@index([userId])
   @@index([ingressId])
   @@index([name(length: 191)])
+}
+
+model PinnedMessage {
+  id             String   @id @default(uuid())
+  message        String   @db.Text
+  senderName     String   @db.VarChar(191)
+  senderIdentity String   @db.VarChar(191)
+  timestamp      BigInt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  streamId String
+  stream   Stream @relation(fields: [streamId], references: [id], onDelete: Cascade)
+
+  @@index([streamId])
 }
 
 model Follow {
